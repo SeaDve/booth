@@ -1,0 +1,10 @@
+[package]
+name = "test"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+glib = "0.14.5"
+libc = "0.2"
+once_cell = "1.0"
+
