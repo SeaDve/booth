@@ -59,12 +59,14 @@ impl Application {
 
     fn block_camera_detection(&self) {
         let imp = imp::Application::from_instance(self);
-        imp.camera.block_signal(imp.code_detected_handler_id.get().unwrap());
+        imp.camera
+            .block_signal(imp.code_detected_handler_id.get().unwrap());
     }
 
     fn unblock_camera_detection(&self) {
         let imp = imp::Application::from_instance(self);
-        imp.camera.unblock_signal(imp.code_detected_handler_id.get().unwrap());
+        imp.camera
+            .unblock_signal(imp.code_detected_handler_id.get().unwrap());
     }
 
     fn on_activate(&self) {
@@ -80,15 +82,19 @@ impl Application {
 
         let imp = imp::Application::from_instance(self);
 
-        imp.code_detected_handler_id.set(imp.camera
-            .connect_code_detected(clone!(@weak self as obj => move |_, code| {
-                let code = code.to_string();
+        imp.code_detected_handler_id
+            .set(
+                imp.camera
+                    .connect_code_detected(clone!(@weak self as obj => move |_, code| {
+                        let code = code.to_string();
 
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(async move {
-                    obj.on_camera_code_detected(&code).await;
-                })
-            }))).unwrap();
+                        let ctx = glib::MainContext::default();
+                        ctx.spawn_local(async move {
+                            obj.on_camera_code_detected(&code).await;
+                        })
+                    })),
+            )
+            .unwrap();
 
         glib::timeout_add_seconds_local(
             5,

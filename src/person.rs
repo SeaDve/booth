@@ -55,23 +55,18 @@ impl Person {
         }
 
         let name = data.get("name").ok_or(anyhow::anyhow!("No name found"))?;
-
         let address = data
             .get("address")
             .ok_or(anyhow::anyhow!("No address found"))?;
-
         let contact_number = data
             .get("contact_number")
             .ok_or(anyhow::anyhow!("No contact_number found"))?;
-
         let room_id = data
             .get("room_id")
             .ok_or(anyhow::anyhow!("No room_id found"))?;
-
         let temperature = data
             .get("temperature")
             .ok_or(anyhow::anyhow!("No temperature found"))?;
-
         let time_detected = data
             .get("time_detected")
             .ok_or(anyhow::anyhow!("No time_detected found"))?;
