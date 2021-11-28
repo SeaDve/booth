@@ -1,0 +1,104 @@
+{
+    "app-id" : "io.github.seadve.Booth",
+    "runtime" : "org.gnome.Platform",
+    "runtime-version" : "41",
+    "sdk" : "org.gnome.Sdk",
+    "sdk-extensions" : [
+        "org.freedesktop.Sdk.Extension.rust-stable"
+    ],
+    "command" : "booth",
+    "finish-args" : [
+        "--share=ipc",
+        "--socket=fallback-x11",
+        "--socket=wayland",
+        "--device=dri",
+        "--filesystem=xdg-run/pipewire-0",
+        "--env=RUST_BACKTRACE=1",
+        "--env=RUST_LOG=booth=debug"
+    ],
+    "build-options" : {
+        "append-path" : "/usr/lib/sdk/rust-stable/bin",
+        "build-args" : [
+            "--share=network"
+        ],
+        "test-args": [
+            "--socket=x11",
+            "--share=network"
+        ]
+    },
+    "cleanup" : [
+        "/include",
+        "/lib/pkgconfig",
+        "/man",
+        "/share/doc",
+        "/share/gtk-doc",
+        "/share/man",
+        "/share/pkgconfig",
+        "*.la",
+        "*.a"
+    ],
+    "modules" : [
+        {
+            "name": "zbar",
+            "config-opts": [
+                "--without-qt",
+                "--without-qt5",
+                "--without-gtk",
+                "--without-xv",
+                "--without-imagemagick",
+                "--without-dbus",
+                "--disable-video",
+                "--without-java",
+                "--without-python",
+                "--with-doc=no",
+                "--disable-doc",
+                "--with-introspection=no",
+                "--enable-codes=qrcode"
+            ],
+            "sources": [{
+                    "type": "archive",
+                    "url": "https://linuxtv.org/downloads/zbar/zbar-0.23.tar.gz",
+                    "sha256": "ac52763a7dd6ddc53ca6cd75ccee14f7abf6ae46ecb31137d025af123edd33bf"
+                },
+                {
+                    "type": "script",
+                    "dest-filename": "autogen.sh",
+                    "commands": [
+                        "autoreconf -vfi -W none"
+                    ]
+                }
+            ]
+        },
+        {
+            "name" : "gst-bad-plugins",
+            "buildsystem": "meson",
+            "config-opts" : [
+                "-Dzbar=enabled",
+                "-Drsvg=disabled",
+                "-Dvulkan=disabled",
+                "-Dexamples=disabled",
+                "-Dtests=disabled",
+                "-Dintrospection=disabled"
+            ],
+            "sources" : [
+                {
+                    "type" : "git",
+                    "url" : "https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad.git",
+                    "branch" : "1.18.4"
+                }
+            ]
+        },
+        {
+            "name" : "booth",
+            "buildsystem" : "meson",
+            "run-tests": true,
+            "sources" : [
+                {
+                    "type": "dir",
+                    "path": "."
+                }
+            ]
+        }
+    ]
+}
+
