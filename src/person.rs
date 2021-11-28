@@ -1,84 +1,19 @@
 use chrono::{DateTime, Local};
+use serde::{Deserialize, Serialize};
 
-use std::collections::HashMap;
-
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Person {
     name: String,
     address: String,
     contact_number: String,
     room_id: String,
-    temperature: f64,
+    temperature: f32,
     time_detected: DateTime<Local>,
 }
 
 impl Person {
     pub fn from_str(string: &str) -> anyhow::Result<Self> {
-        let mut data = HashMap::new();
-
-        for line in string.lines() {
-            if line.contains("name:") {
-                let name = line.trim().trim_start_matches("name:").trim();
-                data.insert("name", name);
-                continue;
-            }
-
-            if line.contains("address:") {
-                let address = line.trim().trim_start_matches("address:").trim();
-                data.insert("address", address);
-                continue;
-            }
-
-            if line.contains("contact_number:") {
-                let contact_number = line.trim().trim_start_matches("contact_number:").trim();
-                data.insert("contact_number", contact_number);
-                continue;
-            }
-
-            if line.contains("room_id:") {
-                let room_id = line.trim().trim_start_matches("room_id:").trim();
-                data.insert("room_id", room_id);
-                continue;
-            }
-
-            if line.contains("temperature:") {
-                let temperature = line.trim().trim_start_matches("temperature:").trim();
-                data.insert("temperature", temperature);
-                continue;
-            }
-
-            if line.contains("time_detected:") {
-                let time_detected = line.trim().trim_start_matches("time_detected:").trim();
-                data.insert("time_detected", time_detected);
-                continue;
-            }
-        }
-
-        let name = data.get("name").ok_or(anyhow::anyhow!("No name found"))?;
-        let address = data
-            .get("address")
-            .ok_or(anyhow::anyhow!("No address found"))?;
-        let contact_number = data
-            .get("contact_number")
-            .ok_or(anyhow::anyhow!("No contact_number found"))?;
-        let room_id = data
-            .get("room_id")
-            .ok_or(anyhow::anyhow!("No room_id found"))?;
-        let temperature = data
-            .get("temperature")
-            .ok_or(anyhow::anyhow!("No temperature found"))?;
-        let time_detected = data
-            .get("time_detected")
-            .ok_or(anyhow::anyhow!("No time_detected found"))?;
-
-        Ok(Self {
-            name: name.to_string(),
-            address: address.to_string(),
-            contact_number: contact_number.to_string(),
-            room_id: room_id.to_string(),
-            temperature: temperature.parse().unwrap(),
-            time_detected: DateTime::parse_from_rfc3339(time_detected)?.into(),
-        })
+        serde_yaml::from_str(string).map_err(Into::into)
     }
 }
 
@@ -103,7 +38,7 @@ mod test {
         assert_eq!(person.address, "Sa tabi-tabi");
         assert_eq!(person.contact_number, "09123345678");
         assert_eq!(person.room_id, "Room123");
-        assert_eq!(person.temperature, 36.7);
+        assert!((person.temperature - 36.7).abs() < f32::EPSILON);
 
         let expected_time_detected: DateTime<Local> =
             DateTime::parse_from_rfc3339("2018-01-26T18:30:09.453+00:00")
@@ -129,7 +64,7 @@ mod test {
         assert_eq!(person.address, "Sa tabi-tabi");
         assert_eq!(person.contact_number, "09123345678");
         assert_eq!(person.room_id, "Room123");
-        assert_eq!(person.temperature, 36.7);
+        assert!((person.temperature - 36.7).abs() < f32::EPSILON);
 
         let expected_time_detected: DateTime<Local> =
             DateTime::parse_from_rfc3339("2018-01-26T18:30:09.453+00:00")

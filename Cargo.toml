@@ -14,5 +14,8 @@ glib = "0.14.8"
 gio = "0.14.8"
 gst = { version = "0.17.4", package = "gstreamer" }
 
-chrono = "0.4.19"
+chrono = { version = "0.4", features = ["serde"] }
 futures-channel = "0.3.17"
+
+serde = { version = "1.0.130", features = ["derive"] }
+serde_yaml = "0.8.21"
