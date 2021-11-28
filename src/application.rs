@@ -3,9 +3,9 @@ use gio::{prelude::*, subclass::prelude::*};
 use glib::clone;
 use once_cell::unsync::OnceCell;
 
-use std::{cell::RefCell, thread, time::Duration};
+use std::{cell::RefCell, time::Duration};
 
-use crate::{camera::Camera, person::Person};
+use crate::{camera::Camera, person::Person, utils};
 
 mod imp {
     use super::*;
@@ -82,7 +82,12 @@ impl Application {
 
         imp.code_detected_handler_id.set(imp.camera
             .connect_code_detected(clone!(@weak self as obj => move |_, code| {
-                obj.on_camera_code_detected(code);
+                let code = code.to_string();
+
+                let ctx = glib::MainContext::default();
+                ctx.spawn_local(async move {
+                    obj.on_camera_code_detected(&code).await;
+                })
             }))).unwrap();
 
         glib::timeout_add_seconds_local(
@@ -96,7 +101,7 @@ impl Application {
         );
     }
 
-    fn on_camera_code_detected(&self, code: &str) {
+    async fn on_camera_code_detected(&self, code: &str) {
         self.block_camera_detection();
 
         let imp = imp::Application::from_instance(self);
@@ -104,13 +109,13 @@ impl Application {
         if imp.last_code.borrow().as_str() == code {
             log::info!("Same code as last, returning...");
         } else {
-            self.handle_code_detected(code);
+            self.handle_code_detected(code).await;
         }
 
         self.unblock_camera_detection();
     }
 
-    fn handle_code_detected(&self, code: &str) {
+    async fn handle_code_detected(&self, code: &str) {
         let current_time = Local::now();
 
         log::info!("Code detected: {}; Current time: {}", code, &current_time);
@@ -120,7 +125,10 @@ impl Application {
 
         let mut code = String::from(code);
         code.push_str(&format!("\ntime_detected: {}", current_time.to_rfc3339()));
-        // TODO get temp from sensor
+
+        // TODO actually get temp from sensor
+        // Simulate sensor getting
+        utils::sleep(Duration::from_secs(1)).await;
         code.push_str(&format!("\ntemperature: {}", 37.1));
 
         match Person::from_str(&code) {

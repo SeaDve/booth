@@ -15,3 +15,4 @@ gio = "0.14.8"
 gst = { version = "0.17.4", package = "gstreamer" }
 
 chrono = "0.4.19"
+futures-channel = "0.3.17"
