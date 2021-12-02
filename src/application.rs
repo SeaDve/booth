@@ -1,11 +1,11 @@
 use chrono::Local;
 use gio::{prelude::*, subclass::prelude::*};
-use glib::clone;
+use glib::{self, clone};
 use once_cell::unsync::OnceCell;
 
 use std::{cell::RefCell, time::Duration};
 
-use crate::{camera::Camera, person::Person, utils};
+use crate::{camera::Camera, person::Person};
 
 mod imp {
     use super::*;
@@ -134,7 +134,7 @@ impl Application {
 
         // TODO actually get temp from sensor
         // Simulate sensor getting
-        utils::sleep(Duration::from_secs(1)).await;
+        glib::timeout_future(Duration::from_secs(1)).await;
         code.push_str(&format!("\ntemperature: {}", 37.1));
 
         match Person::from_str(&code) {

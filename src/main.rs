@@ -1,7 +1,6 @@
 mod application;
 mod camera;
 mod person;
-mod utils;
 
 use gio::prelude::*;
 
