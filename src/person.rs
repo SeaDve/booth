@@ -1,7 +1,7 @@
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Person {
     name: String,
     address: String,
@@ -14,6 +14,17 @@ pub struct Person {
 impl Person {
     pub fn from_str(string: &str) -> anyhow::Result<Self> {
         serde_yaml::from_str(string).map_err(Into::into)
+    }
+
+    pub fn into_vec(self) -> Vec<String> {
+        vec![
+            self.name,
+            self.address,
+            self.contact_number,
+            self.room_id,
+            self.temperature.to_string(),
+            self.time_detected.to_rfc3339(),
+        ]
     }
 }
 

@@ -4,6 +4,7 @@ booth_sources = [
   'camera.rs',
   'main.rs',
   'person.rs',
+  'spreadsheet.rs',
 ]
 
 booth_deps = [

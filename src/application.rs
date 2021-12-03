@@ -5,7 +5,7 @@ use once_cell::unsync::OnceCell;
 
 use std::{cell::RefCell, time::Duration};
 
-use crate::{camera::Camera, person::Person};
+use crate::{camera::Camera, person::Person, spreadsheet::Spreadsheet, RUNTIME};
 
 mod imp {
     use super::*;
@@ -138,9 +138,29 @@ impl Application {
         code.push_str(&format!("\ntemperature: {}", 37.1));
 
         match Person::from_str(&code) {
-            Ok(person) => imp.people.borrow_mut().push(person),
+            Ok(person) => {
+                if let Err(err) = Self::update_spreadsheet(&person).await {
+                    log::error!("Failed to update remote spreadsheet: {:?}", err);
+                }
+
+                imp.people.borrow_mut().push(person);
+            }
             Err(err) => log::warn!("Failed to parse string {}: {:?}", code, err),
         }
+    }
+
+    fn update_spreadsheet(person: &Person) -> tokio::task::JoinHandle<anyhow::Result<()>> {
+        let person = person.clone();
+
+        RUNTIME.spawn(async move {
+            let spreadsheet = Spreadsheet::new(
+                "1IA6YhAdkvdNkkPPyhCj5JQrB8dcaKZNWzk-4gI0Ea4Y",
+                include_str!("../client_secret.json"),
+            )
+            .await?;
+            spreadsheet.append_person(person).await?;
+            Ok(())
+        })
     }
 }
 

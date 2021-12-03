@@ -1,10 +1,15 @@
 mod application;
 mod camera;
 mod person;
+mod spreadsheet;
 
 use gio::prelude::*;
+use once_cell::sync::Lazy;
 
 use self::application::Application;
+
+pub static RUNTIME: Lazy<tokio::runtime::Runtime> =
+    Lazy::new(|| tokio::runtime::Runtime::new().unwrap());
 
 fn main() {
     pretty_env_logger::init_timed();

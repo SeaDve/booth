@@ -15,7 +15,11 @@ gio = "0.14.8"
 gst = { version = "0.17.4", package = "gstreamer" }
 
 chrono = { version = "0.4", features = ["serde"] }
-futures-channel = "0.3.17"
-
 serde = { version = "1.0.130", features = ["derive"] }
 serde_yaml = "0.8.21"
+
+google-sheets4 = "2.0.8"
+hyper = "0.14"
+hyper-rustls = "0.22"
+yup-oauth2 = "5.0"
+tokio = { version = "1.14.0", features = ["rt-multi-thread"] }
