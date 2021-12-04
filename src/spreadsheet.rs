@@ -5,10 +5,17 @@ use google_sheets4::{
 use hyper::Client;
 use hyper_rustls::HttpsConnector;
 use yup_oauth2::{InstalledFlowAuthenticator, InstalledFlowReturnMethod};
+use once_cell::sync::Lazy;
+
+use std::path::PathBuf;
 
 use crate::person::Person;
 
-const TOKEN_STORAGE_PATH: &str = "token_cache.json";
+static TOKEN_STORAGE_PATH: Lazy<PathBuf> = Lazy::new(|| {
+    let mut path = glib::user_data_dir();
+    path.push("token_cache.json");
+    path
+});
 
 pub struct Spreadsheet {
     id: String,
@@ -22,7 +29,7 @@ impl Spreadsheet {
         let app_secret = yup_oauth2::parse_application_secret(client_secret)?;
         let method = InstalledFlowReturnMethod::Interactive;
         let authenticator = InstalledFlowAuthenticator::builder(app_secret, method)
-            .persist_tokens_to_disk(TOKEN_STORAGE_PATH)
+            .persist_tokens_to_disk(TOKEN_STORAGE_PATH.as_path())
             .hyper_client(client.clone())
             .build()
             .await?;

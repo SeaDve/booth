@@ -8,7 +8,7 @@ use once_cell::sync::Lazy;
 
 use self::application::Application;
 
-pub static RUNTIME: Lazy<tokio::runtime::Runtime> =
+static RUNTIME: Lazy<tokio::runtime::Runtime> =
     Lazy::new(|| tokio::runtime::Runtime::new().unwrap());
 
 fn main() {
