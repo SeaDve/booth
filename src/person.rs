@@ -1,4 +1,5 @@
 use chrono::{DateTime, Local};
+use google_sheets4::api::ValueRange;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -16,15 +17,19 @@ impl Person {
         serde_yaml::from_str(string).map_err(Into::into)
     }
 
-    pub fn into_vec(self) -> Vec<String> {
-        vec![
-            self.name,
-            self.address,
-            self.contact_number,
-            self.room_id,
-            self.temperature.to_string(),
-            self.time_detected.to_rfc3339(),
-        ]
+    pub fn into_value_range(self) -> ValueRange {
+        ValueRange {
+            major_dimension: None,
+            range: Some("A1:F1".into()), // Single column for each field
+            values: Some(vec![vec![
+                self.name,
+                self.address,
+                self.contact_number,
+                self.room_id,
+                self.temperature.to_string(),
+                self.time_detected.to_rfc3339(),
+            ]]),
+        }
     }
 }
 

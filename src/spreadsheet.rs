@@ -1,11 +1,11 @@
 use google_sheets4::{
-    api::{AppendValuesResponse, Scope, ValueRange},
+    api::{AppendValuesResponse, Scope},
     Sheets,
 };
 use hyper::Client;
 use hyper_rustls::HttpsConnector;
-use yup_oauth2::{InstalledFlowAuthenticator, InstalledFlowReturnMethod};
 use once_cell::sync::Lazy;
+use yup_oauth2::{InstalledFlowAuthenticator, InstalledFlowReturnMethod};
 
 use std::path::PathBuf;
 
@@ -43,18 +43,16 @@ impl Spreadsheet {
     }
 
     pub async fn append_person(&self, person: Person) -> anyhow::Result<AppendValuesResponse> {
-        let range = "Sheet1!A1:F1"; // Single column for each `Person` field
-
-        let request = ValueRange {
-            major_dimension: None,
-            range: None,
-            values: Some(vec![person.into_vec()]),
-        };
+        let mut request = person.into_value_range();
+        let range = request
+            .range
+            .take()
+            .ok_or_else(|| anyhow::anyhow!("Missing `range` for `ValueRange` of `Person`"))?;
 
         let (body, response) = self
             .hub
             .spreadsheets()
-            .values_append(request, self.id.as_str(), range)
+            .values_append(request, self.id.as_str(), &range)
             .add_scope(Scope::Spreadsheet)
             .value_input_option("USER_ENTERED")
             .doit()
