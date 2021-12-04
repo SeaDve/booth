@@ -145,7 +145,10 @@ impl Application {
 
                 imp.people.borrow_mut().push(person);
             }
-            Err(err) => log::warn!("Failed to parse string {}: {:?}", code, err),
+            Err(err) => {
+                // TODO add user feedback on the device
+                log::warn!("Failed to parse string {}: {:?}", code, err);
+            }
         }
     }
 
