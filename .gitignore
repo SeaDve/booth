@@ -1,4 +1,3 @@
 target/
 _build/
 .flatpak-builder/
-client_secret.json

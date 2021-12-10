@@ -156,11 +156,9 @@ impl Application {
         let person = person.clone();
 
         RUNTIME.spawn(async move {
-            let spreadsheet = Spreadsheet::new(
-                "1IA6YhAdkvdNkkPPyhCj5JQrB8dcaKZNWzk-4gI0Ea4Y",
-                include_str!("../client_secret.json"),
-            )
-            .await?;
+            let spreadsheet_id = "1IA6YhAdkvdNkkPPyhCj5JQrB8dcaKZNWzk-4gI0Ea4Y";
+            let client_secret = include_str!("../client_secret.json");
+            let spreadsheet = Spreadsheet::new(spreadsheet_id, client_secret).await?;
             spreadsheet.append_person(person).await?;
             Ok(())
         })
