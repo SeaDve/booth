@@ -58,7 +58,7 @@ impl Spreadsheet {
             .doit()
             .await?;
 
-        log::info!("Sucessfully appended person with body `{:?}`", body);
+        log::info!("Successfully appended person with body `{:?}`", body);
 
         Ok(response)
     }
