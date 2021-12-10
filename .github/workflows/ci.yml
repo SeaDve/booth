@@ -22,22 +22,6 @@ jobs:
       - name: "Run rustfmt"
         run: cargo fmt --all -- --check
 
-  clippy:
-    name: Clippy
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - run: rustup component add clippy
-      - uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: -- -D warnings
-
   flatpak:
     name: Flatpak
     runs-on: ubuntu-20.04
@@ -64,7 +48,7 @@ jobs:
       - uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v4
         with:
           bundle: booth.flatpak
-          manifest-path: build-aux/io.github.seadve.Booth.json
+          manifest-path: io.github.seadve.Booth.json
           run-tests: true
           arch: ${{ matrix.arch }}
           # TODO: Currently there is bug where, roughly speaking, there is an error in the creation of the cache.
