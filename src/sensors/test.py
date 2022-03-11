@@ -113,16 +113,16 @@ print(">>> STARTING main.py")
 #     print("Cleaning up!")
 #     # display.lcd_clear()
 
-import RPi.GPIO as io
-import time
+# import RPi.GPIO as io
+# import time
 
-RELAY = 17
+# RELAY = 17
 
-io.setmode(io.BCM)
-io.setup(RELAY, io.OUT)
+# io.setmode(io.BCM)
+# io.setup(RELAY, io.OUT)
 
-while True:
-    io.output(RELAY, Fa
-    time.sleep(0.5)
-    print("test")
-    io.output(RELAY, io.HIGH)
+# while True:
+#     io.output(RELAY, Fa)
+#     time.sleep(0.5)
+#     print("test")
+#     io.output(RELAY, io.HIGH)

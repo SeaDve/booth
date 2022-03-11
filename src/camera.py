@@ -1,4 +1,4 @@
-from gi.repository import GObject, Gst, GLib
+from gi.repository import GObject, Gst
 
 
 class ElementNotFoundError(Exception):
@@ -54,7 +54,7 @@ class Camera(GObject.Object):
         self._bus.disconnect(self._bus_handler_id)
         self._bus.remove_signal_watch()
 
-    def _handle_message(self, bus: Gst.Bus, message: Gst.Message):
+    def _handle_message(self, bus: Gst.Bus, message: Gst.Message) -> bool:
         if message.type == Gst.MessageType.ELEMENT:
             symbol = message.get_structure().get_value("symbol")
             if symbol is not None:
@@ -72,6 +72,8 @@ class Camera(GObject.Object):
             print(f"Error: {error} ({debug})")
             self.stop()
             return False
+
+        return True
 
 
 def make_gst_element(name: str) -> Gst.Element:

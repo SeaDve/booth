@@ -29,11 +29,12 @@ class Person:
         try:
             data = yaml.safe_load(string)
 
-            time_detected = None
-            if isinstance(data["time_detected"], str):
-                time_detected = datetime.fromisoformat(data["time_detected"])
-            else:
-                time_detected = data["time_detected"]
+            time_detected_data = data["time_detected"]
+            time_detected = (
+                datetime.fromisoformat(time_detected_data)
+                if isinstance(time_detected_data, str)
+                else time_detected_data
+            )
 
             return Person(
                 data["name"],

@@ -2,6 +2,14 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Check",
+            "type": "shell",
+            "command": "mypy --ignore-missing-imports --disallow-incomplete-defs src && flake8 --ignore E402 --max-line-length=99 src",
+            "presentation": {
+                "reveal": "always"
+            }
+        },
+        {
             "label": "Run",
             "type": "shell",
             "command": "python src/main.py",
@@ -11,7 +19,10 @@
             },
             "presentation": {
                 "reveal": "always"
-            }
+            },
+            "dependsOn": [
+                "Check"
+            ]
         },
         {
             "label": "Copy to Pi",

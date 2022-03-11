@@ -27,29 +27,32 @@ class Application:
     def run(self):
         self._loop.run()
 
-    def _on_code_detected(self, camera: Camera, code: str):
+    def _on_code_detected(self, camera: Camera, code: str) -> None:
         self._camera.handler_block(self._code_detected_handler_id)
 
         if self._last_code == code:
             print(">>> Same code as last, returning...")
         else:
-            print(f">>> New detected code `{code}`")
-
-            self._last_code = code
-
-            time_detected = datetime.now().isoformat()
-            temperature = "37.1"  # TODO actually get the temperature from sensor
-
-            try:
-                person = Person.from_str(
-                    f"{code}\ntime_detected: {time_detected}\ntemperature: {temperature}"
-                )
-            except PersonParseError as error:
-                print(f"Error: {error}")
-            else:
-                Spreadsheet(DEFAULT_SPREADSHEET_ID).append_person(person)
+            self._handle_new_code_detected(code)
 
         self._camera.handler_unblock(self._code_detected_handler_id)
+
+    def _handle_new_code_detected(self, code: str) -> None:
+        print(f">>> New detected code `{code}`")
+
+        self._last_code = code
+
+        time_detected = datetime.now().isoformat()
+        temperature = "37.1"  # TODO actually get the temperature from sensor
+
+        try:
+            Spreadsheet(DEFAULT_SPREADSHEET_ID).append_person(
+                Person.from_str(
+                    f"{code}\ntime_detected: {time_detected}\ntemperature: {temperature}"
+                )
+            )
+        except PersonParseError as error:
+            print(f"Error: {error}")
 
     def _reset_last_code(self):
         self._last_code = None

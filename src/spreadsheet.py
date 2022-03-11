@@ -16,7 +16,7 @@ class Spreadsheet:
         )
         self._inner = client.open_by_key(id)
 
-    def append_person(self, person: Person):
+    def append_person(self, person: Person) -> None:
         worksheet = self._inner.get_worksheet(0)
         worksheet.append_row(
             [

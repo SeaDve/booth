@@ -76,7 +76,7 @@ class I2CDevice:
                     if exists("/usr/sbin/i2cdetect")
                     else addr_default
                 )
-            except:
+            except Exception:
                 self.addr = addr_default
         else:
             self.addr = addr

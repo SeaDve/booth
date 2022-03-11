@@ -4,7 +4,6 @@ gi.require_version("Gst", "1.0")
 from gi.repository import Gst
 
 from application import Application
-from person import Person
 
 
 def main():
