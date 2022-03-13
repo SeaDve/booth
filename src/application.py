@@ -6,8 +6,9 @@ from gi.repository import GLib
 from camera import Camera
 from person import Person, PersonParseError
 from spreadsheet import Spreadsheet
-from sensors.proximity import ProximitySensor
-from sensors.temperature import TemperatureSensor
+from devices.proximity import ProximitySensor
+from devices.temperature import TemperatureSensor
+from devices.display import Display
 
 DEFAULT_TEMPERATURE = -1
 DEFAULT_SPREADSHEET_ID = "1IA6YhAdkvdNkkPPyhCj5JQrB8dcaKZNWzk-4gI0Ea4Y"
@@ -20,6 +21,7 @@ class Application:
     _last_code: Union[str, None] = None
 
     _camera: Camera
+    _display: Display
     _proximity_sensor: ProximitySensor
     _temperature_sensor: TemperatureSensor
 
@@ -36,6 +38,8 @@ class Application:
         )
 
         self._temperature_sensor = TemperatureSensor()
+
+        self._display = Display(["   ^   ^   ^    ", "Scan code above "])
 
         GLib.timeout_add_seconds(5, self._reset_last_code)
 
@@ -71,25 +75,29 @@ class Application:
         self, is_timeout_reached: bool, code: str
     ) -> None:
         time_detected = datetime.now().isoformat()
+        temperature = DEFAULT_TEMPERATURE
 
         if is_timeout_reached:
+            self._display.write(["   Received no  ", "  Temperature   "])
             print(
-                ">>> Skipped dispensing alcohol or getting temperature: Timeout reached"
+                ">>> Skipped dispensing alcohol and getting temperature: Timeout reached"
             )
-            self._try_store_person_to_spreadsheet(
-                Person.from_str(
-                    f"{code}\ntime_detected: {time_detected}\ntemperature: {DEFAULT_TEMPERATURE}"
-                )
-            )
+
         else:
-            temperature = self._temperature_sensor.get_object_temperature()
-            # Dispense alcohol here
-            # Display something here
-            self._try_store_person_to_spreadsheet(
-                Person.from_str(
-                    f"{code}\ntime_detected: {time_detected}\ntemperature: {temperature}"
-                )
+            print(
+                ">>> Proximity sensor detected something. Dispensing alcholor and getting temperature"
             )
+
+            temperature = self._temperature_sensor.get_object_temperature()
+            self._display.write(["  Temperature   ", f"     {temperature:.1f} C     "])
+            # Dispense alcohol here
+
+        person = Person.from_str(
+            f"{code}\ntime_detected: {time_detected}\ntemperature: {temperature}"
+        )
+        self._try_store_person_to_spreadsheet(person)
+
+        self._display.ephemeral_write([f"Hi {person.name}", "  Info logged   "], 3)
 
         self._camera.handler_unblock(self._code_detected_handler_id)
         self._proximity_sensor.handler_unblock(self._detected_handler_id)
@@ -102,6 +110,7 @@ class Application:
         self._proximity_sensor.handler_block(self._detected_handler_id)
 
         print(">>> Wait 5 seconds for hand")
+        self._display.write([" Code detected! ", "temp&alcohol v v"])
         self._proximity_sensor.wait_for_input(
             5, self._handle_proximity_sensor_wait_for_input, code
         )
