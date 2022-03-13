@@ -1,20 +1,14 @@
-import time
-from typing import Callable
+from typing import Callable, Any
 
 import RPi.GPIO as GPIO
 from gi.repository import GObject, GLib
 
 
-class WaitForInputTimeout(Exception):
-    def __init__(self, secs: int):
-        self._timeout = secs
-
-    def __str__(self):
-        return f"Timeout of {self._timeout} is reached"
-
-
 class ProximitySensor(GObject.Object):
     __gsignals__ = {"detected": (GObject.SIGNAL_RUN_LAST, None, ())}
+
+    _detected_handler_id = None
+    _timeout_handler_id = None
 
     def __init__(self, bcm_port: str):
         super().__init__()
@@ -29,13 +23,22 @@ class ProximitySensor(GObject.Object):
             self.emit("detected")
         return True
 
-    def wait_for_input(self, timeout_secs: int) -> None:
-        while True:
-            if self._time > (timeout_secs * 5):
-                raise WaitForInputTimeout(timeout_secs)
+    def wait_for_input(
+        self, timeout_secs: int, callback: Callable[[bool], None], *args: Any
+    ) -> None:
+        def callback_inner(is_timeout_reached: bool) -> bool:
+            if self._detected_handler_id is not None:
+                self.disconnect(self._detected_handler_id)
+                self._detected_handler_id = None
 
-            if GPIO.input(self._bcm_port) == 0:
-                break
+            if self._timeout_handler_id is not None:
+                GLib.source_remove(self._timeout_handler_id)
+                self._timeout_handler_id = None
 
-            self._time += 1
-            time.sleep(0.2)
+            callback(is_timeout_reached, *args)
+            return False
+
+        self._detected_handler_id = self.connect(
+            "detected", lambda _: callback_inner(False)
+        )
+        self._timeout_handler_id = GLib.timeout_add_seconds(5, callback_inner, True)

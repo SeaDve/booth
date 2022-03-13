@@ -7,3 +7,4 @@ Dependencies:
 Python dependencies
 * `gspread`
 * `pyyaml`
+* `PyMLX90614`

@@ -7,8 +7,9 @@ from camera import Camera
 from person import Person, PersonParseError
 from spreadsheet import Spreadsheet
 from sensors.proximity import ProximitySensor
+from sensors.temperature import TemperatureSensor
 
-
+DEFAULT_TEMPERATURE = -1
 DEFAULT_SPREADSHEET_ID = "1IA6YhAdkvdNkkPPyhCj5JQrB8dcaKZNWzk-4gI0Ea4Y"
 
 # GPIO ports
@@ -20,6 +21,7 @@ class Application:
 
     _camera: Camera
     _proximity_sensor: ProximitySensor
+    _temperature_sensor: TemperatureSensor
 
     def __init__(self):
         self._camera = Camera()
@@ -29,7 +31,11 @@ class Application:
         self._camera.start()
 
         self._proximity_sensor = ProximitySensor(PROXIMITY_SENSOR_IO)
-        self._proximity_sensor.connect("detected", self._on_proximity_sensor_detected)
+        self._detected_handler_id = self._proximity_sensor.connect(
+            "detected", self._on_proximity_sensor_detected
+        )
+
+        self._temperature_sensor = TemperatureSensor()
 
         GLib.timeout_add_seconds(5, self._reset_last_code)
 
@@ -43,8 +49,9 @@ class Application:
 
     def _on_proximity_sensor_detected(self, proximity_sensor: ProximitySensor) -> None:
         print(">>> Proximity sensor detected something")
+        print(f"obj: {self._temperature_sensor.get_object_temperature()}")
 
-        # does same thing like in _handle_new_code_detected
+        # does same thing like in _handle_proximity_sensor_wait_for_input
 
     def _on_code_detected(self, camera: Camera, code: str) -> None:
         self._camera.handler_block(self._code_detected_handler_id)
@@ -54,35 +61,50 @@ class Application:
         else:
             self._handle_new_code_detected(code)
 
+    def _try_store_person_to_spreadsheet(self, person: Person) -> None:
+        try:
+            Spreadsheet(DEFAULT_SPREADSHEET_ID).append_person(person)
+        except PersonParseError as error:
+            print(f"Error: {error}")
+
+    def _handle_proximity_sensor_wait_for_input(
+        self, is_timeout_reached: bool, code: str
+    ) -> None:
+        time_detected = datetime.now().isoformat()
+
+        if is_timeout_reached:
+            print(
+                ">>> Skipped dispensing alcohol or getting temperature: Timeout reached"
+            )
+            self._try_store_person_to_spreadsheet(
+                Person.from_str(
+                    f"{code}\ntime_detected: {time_detected}\ntemperature: {DEFAULT_TEMPERATURE}"
+                )
+            )
+        else:
+            temperature = self._temperature_sensor.get_object_temperature()
+            # Dispense alcohol here
+            # Display something here
+            self._try_store_person_to_spreadsheet(
+                Person.from_str(
+                    f"{code}\ntime_detected: {time_detected}\ntemperature: {temperature}"
+                )
+            )
+
         self._camera.handler_unblock(self._code_detected_handler_id)
+        self._proximity_sensor.handler_unblock(self._detected_handler_id)
 
     def _handle_new_code_detected(self, code: str) -> None:
         print(f">>> New detected code `{code}`")
 
         self._last_code = code
 
-        time_detected = datetime.now().isoformat()
+        self._proximity_sensor.handler_block(self._detected_handler_id)
 
-        print(">>> Wait 3 seconds for hand")
-
-        temperature = "-1"
-
-        try:
-            self._proximity_sensor.wait_for_input(5)
-            temperature = "37.1"  # TODO actually get the temperature from sensor
-            # Dispense alcohol here
-            # Display something here
-        except WaitForInputTimeout as error:
-            print(f">>> Skipped dispensing alcohol or getting temperature: {error}")
-
-        try:
-            Spreadsheet(DEFAULT_SPREADSHEET_ID).append_person(
-                Person.from_str(
-                    f"{code}\ntime_detected: {time_detected}\ntemperature: {temperature}"
-                )
-            )
-        except PersonParseError as error:
-            print(f"Error: {error}")
+        print(">>> Wait 5 seconds for hand")
+        self._proximity_sensor.wait_for_input(
+            5, self._handle_proximity_sensor_wait_for_input, code
+        )
 
     def _reset_last_code(self):
         self._last_code = None
