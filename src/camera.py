@@ -22,7 +22,7 @@ class Camera(GObject.Object):
         self._bus = self._pipeline.get_bus()
 
         try:
-            pipewiresrc = make_gst_element("pipewiresrc")
+            pipewiresrc = make_gst_element("v4l2src")
             queue = make_gst_element("queue")
             videoconvert = make_gst_element("videoconvert")
             zbar = make_gst_element("zbar")

@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Check",
+            "label": "mypyAndFlake8Check",
             "type": "shell",
             "command": "mypy --ignore-missing-imports --disallow-incomplete-defs src && flake8 --ignore E402 --max-line-length=99 src",
             "presentation": {
@@ -19,15 +19,31 @@
             },
             "presentation": {
                 "reveal": "always"
-            },
-            "dependsOn": [
-                "Check"
-            ]
+            }
         },
         {
-            "label": "Copy to Pi",
+            "label": "PiSSH",
             "type": "shell",
-            "command": "sshpass -p \"raspberry\" scp -r src pi@192.168.0.22:/home/pi/booth-py/",
+            "command": "sshpass -p raspberry ssh pi@192.168.0.22",
+            "presentation": {
+                "reveal": "always"
+            }
+        },
+        {
+            "label": "CopyToPi",
+            "type": "shell",
+            "command": "sshpass -p raspberry rsync --exclude \".*/\" -aP ./ pi@192.168.0.22:~/booth-py",
+            "presentation": {
+                "reveal": "always"
+            }
+        },
+        {
+            "label": "Copy and Run to Pi",
+            "type": "shell",
+            "command": "sshpass -p raspberry ssh pi@192.168.0.22 'cd ~/booth-py && python src/main.py'",
+            "dependsOn": [
+                "CopyToPi"
+            ],
             "presentation": {
                 "reveal": "always"
             }
