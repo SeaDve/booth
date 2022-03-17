@@ -53,9 +53,28 @@ class Application:
 
     def _on_proximity_sensor_detected(self, proximity_sensor: ProximitySensor) -> None:
         print(">>> Proximity sensor detected something")
-        print(f"obj: {self._temperature_sensor.get_object_temperature()}")
 
-        # does same thing like in _handle_proximity_sensor_wait_for_input
+        self._proximity_sensor.handler_block(self._detected_handler_id)
+
+        # Dispense alcohol here <
+        temperature = self._temperature_sensor.get_object_temperature()
+        self._display.ephemeral_write(
+            ["  Temperature   ", f"     {temperature:.1f} C     "], 3
+        )
+
+        person = Person.from_str(
+            f"""
+name: Unknown
+address: Unknown
+contact_number: Unknown
+room_id: Unknown
+time_detected: {datetime.now().isoformat()}
+temperature: {temperature}
+"""
+        )
+        self._try_store_person_to_spreadsheet(person)
+
+        self._proximity_sensor.handler_unblock(self._detected_handler_id)
 
     def _on_code_detected(self, camera: Camera, code: str) -> None:
         self._camera.handler_block(self._code_detected_handler_id)
@@ -74,7 +93,6 @@ class Application:
     def _handle_proximity_sensor_wait_for_input(
         self, is_timeout_reached: bool, code: str
     ) -> None:
-        time_detected = datetime.now().isoformat()
         temperature = DEFAULT_TEMPERATURE
 
         if is_timeout_reached:
@@ -85,15 +103,15 @@ class Application:
 
         else:
             print(
-                ">>> Proximity sensor detected something. Dispensing alcholor and getting temperature"
+                ">>> Proximity sensor detected something. Dispensing alcohol and getting temp"
             )
 
+            # Dispense alcohol here <
             temperature = self._temperature_sensor.get_object_temperature()
             self._display.write(["  Temperature   ", f"     {temperature:.1f} C     "])
-            # Dispense alcohol here
 
         person = Person.from_str(
-            f"{code}\ntime_detected: {time_detected}\ntemperature: {temperature}"
+            f"{code}\ntime_detected: {datetime.now().isoformat()}\ntemperature: {temperature}"
         )
         self._try_store_person_to_spreadsheet(person)
 
