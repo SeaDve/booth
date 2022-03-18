@@ -11,12 +11,12 @@ DISPLAY_HEIGHT = 2
 class Display:
     _timeout_id = None
 
-    def __init__(self, default_written: Optional[List[str]]):
+    def __init__(self, default_text: Optional[List[str]]):
         self._inner = Lcd(addr=0x27)
-        self._default_written = default_written
+        self._default_text = default_text
 
-        if self._default_written is not None:
-            self.write(self._default_written)
+        if self._default_text is not None:
+            self.write(self._default_text)
 
     def __del__(self):
         self._inner.lcd_clear()
@@ -46,7 +46,7 @@ class Display:
             self._inner.lcd_display_string(string, line_number)
 
     def reset(self) -> None:
-        if self._default_written is not None:
-            self.write(self._default_written)
+        if self._default_text is not None:
+            self.write(self._default_text)
         else:
             self._inner.lcd_clear()
