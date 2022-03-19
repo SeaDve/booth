@@ -24,7 +24,7 @@
         {
             "label": "PiSSH",
             "type": "shell",
-            "command": "sshpass -p raspberry ssh pi@192.168.0.22",
+            "command": "sshpass -p raspberry ssh pi@192.168.0.19",
             "presentation": {
                 "reveal": "always"
             }
@@ -32,7 +32,7 @@
         {
             "label": "CopyToPi",
             "type": "shell",
-            "command": "sshpass -p raspberry rsync --exclude \".*/\" -aP ./ pi@192.168.0.22:~/booth-py",
+            "command": "sshpass -p raspberry rsync --exclude \".*/\" -aP ./ pi@192.168.0.19:~/booth-py",
             "presentation": {
                 "reveal": "always"
             }
@@ -40,7 +40,7 @@
         {
             "label": "Copy and Run to Pi",
             "type": "shell",
-            "command": "sshpass -p raspberry ssh pi@192.168.0.22 'cd ~/booth-py && python src/main.py'",
+            "command": "sshpass -p raspberry ssh pi@192.168.0.19 'cd ~/booth-py && python src/main.py'",
             "dependsOn": [
                 "CopyToPi"
             ],

@@ -1,3 +1,4 @@
+from threading import Thread
 from datetime import datetime
 from typing import Union
 
@@ -84,9 +85,15 @@ temperature: {temperature}
         else:
             self._handle_new_code_detected(code)
 
+    def _store_person_to_spreadsheet_thread(self, person: Person) -> None:
+        Spreadsheet(DEFAULT_SPREADSHEET_ID).append_person(person)
+
     def _try_store_person_to_spreadsheet(self, person: Person) -> None:
         try:
-            Spreadsheet(DEFAULT_SPREADSHEET_ID).append_person(person)
+            thread = Thread(
+                target=self._store_person_to_spreadsheet_thread, args=person
+            )
+            thread.run()
         except PersonParseError as error:
             print(f"Error: {error}")
 
