@@ -10,12 +10,14 @@ from spreadsheet import Spreadsheet
 from devices.proximity import ProximitySensor
 from devices.temperature import TemperatureSensor
 from devices.display import Display
+from devices.relay import Relay
 
 DEFAULT_TEMPERATURE = -1
 DEFAULT_SPREADSHEET_ID = "1IA6YhAdkvdNkkPPyhCj5JQrB8dcaKZNWzk-4gI0Ea4Y"
 
 # GPIO ports
 PROXIMITY_SENSOR_IO = 4
+PUMP_IO = 17
 
 
 class Application:
@@ -23,6 +25,7 @@ class Application:
 
     _camera: Camera
     _display: Display
+    _pump: Relay
     _proximity_sensor: ProximitySensor
     _temperature_sensor: TemperatureSensor
 
@@ -42,6 +45,8 @@ class Application:
 
         self._display = Display(["   ^   ^   ^    ", "Scan code above "])
 
+        self._pump = Relay(PUMP_IO)
+
         GLib.timeout_add_seconds(5, self._reset_last_code)
 
     def run(self):
@@ -57,7 +62,7 @@ class Application:
 
         self._proximity_sensor.handler_block(self._detected_handler_id)
 
-        # Dispense alcohol here <
+        self._pump.ephemeral_on(1500)
         temperature = self._temperature_sensor.get_object_temperature()
         self._display.ephemeral_write(
             ["  Temperature   ", f"     {temperature:.1f} C     "], 3
@@ -91,7 +96,7 @@ temperature: {temperature}
     def _try_store_person_to_spreadsheet(self, person: Person) -> None:
         try:
             thread = Thread(
-                target=self._store_person_to_spreadsheet_thread, args=person
+                target=self._store_person_to_spreadsheet_thread, args=[person]
             )
             thread.run()
         except PersonParseError as error:
@@ -113,7 +118,7 @@ temperature: {temperature}
                 ">>> Proximity sensor detected something. Dispensing alcohol and getting temp"
             )
 
-            # Dispense alcohol here <
+            self._pump.ephemeral_on(1500)
             temperature = self._temperature_sensor.get_object_temperature()
             self._display.write(["  Temperature   ", f"     {temperature:.1f} C     "])
 
