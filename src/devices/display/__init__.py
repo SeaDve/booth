@@ -45,8 +45,11 @@ class Display:
 
             self._inner.lcd_display_string(string, line_number)
 
+    def clear(self) -> None:
+        self._inner.lcd_clear()
+
     def reset(self) -> None:
         if self._default_text is not None:
             self.write(self._default_text)
         else:
-            self._inner.lcd_clear()
+            self.clear()

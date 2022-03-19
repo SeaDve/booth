@@ -56,6 +56,8 @@ class Application:
             loop.run()
         except KeyboardInterrupt:
             loop.quit()
+        finally:
+            self._display.clear()
 
     def _on_proximity_sensor_detected(self, proximity_sensor: ProximitySensor) -> None:
         print(">>> Proximity sensor detected something")
