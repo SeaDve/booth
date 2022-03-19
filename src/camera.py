@@ -18,30 +18,7 @@ class Camera(GObject.Object):
     def __init__(self):
         super().__init__()
 
-        self._pipeline = Gst.Pipeline()
-        self._bus = self._pipeline.get_bus()
-
-        try:
-            pipewiresrc = make_gst_element("v4l2src")
-            queue = make_gst_element("queue")
-            videoconvert = make_gst_element("videoconvert")
-            zbar = make_gst_element("zbar")
-            fakesink = make_gst_element("fakesink")
-        except ElementNotFoundError as error:
-            print(f"Error: {error}")
-
-        elements = [pipewiresrc, queue, videoconvert, zbar, fakesink]
-
-        for element in elements:
-            self._pipeline.add(element)
-
-        pipewiresrc.link(queue)
-        queue.link(videoconvert)
-        videoconvert.link(zbar)
-        zbar.link(fakesink)
-
-        for element in elements:
-            element.sync_state_with_parent()
+        self._setup_pipeline()
 
     def start(self):
         self._bus.add_signal_watch()
@@ -71,9 +48,38 @@ class Camera(GObject.Object):
             error, debug = message.parse_error()
             print(f"Error: {error} ({debug})")
             self.stop()
+            self._pipeline = None
+            self._setup_pipeline()
+            self.start()
             return False
 
         return True
+
+    def _setup_pipeline(self) -> None:
+        self._pipeline = Gst.Pipeline()
+        self._bus = self._pipeline.get_bus()
+
+        try:
+            pipewiresrc = make_gst_element("v4l2src")
+            queue = make_gst_element("queue")
+            videoconvert = make_gst_element("videoconvert")
+            zbar = make_gst_element("zbar")
+            fakesink = make_gst_element("fakesink")
+        except ElementNotFoundError as error:
+            print(f"Error: {error}")
+
+        elements = [pipewiresrc, queue, videoconvert, zbar, fakesink]
+
+        for element in elements:
+            self._pipeline.add(element)
+
+        pipewiresrc.link(queue)
+        queue.link(videoconvert)
+        videoconvert.link(zbar)
+        zbar.link(fakesink)
+
+        for element in elements:
+            element.sync_state_with_parent()
 
 
 def make_gst_element(name: str) -> Gst.Element:

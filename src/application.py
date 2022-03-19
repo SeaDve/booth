@@ -84,6 +84,7 @@ temperature: {temperature}
 
     def _on_code_detected(self, camera: Camera, code: str) -> None:
         self._camera.handler_block(self._code_detected_handler_id)
+        self._proximity_sensor.handler_block(self._detected_handler_id)
 
         if self._last_code == code:
             print(">>> Same code as last, returning...")
@@ -136,8 +137,6 @@ temperature: {temperature}
         print(f">>> New detected code `{code}`")
 
         self._last_code = code
-
-        self._proximity_sensor.handler_block(self._detected_handler_id)
 
         print(">>> Wait 5 seconds for hand")
         self._display.write([" Code detected! ", "temp&alcohol v v"])

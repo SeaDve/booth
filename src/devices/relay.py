@@ -16,7 +16,7 @@ class Relay:
 
     def ephemeral_on(self, duration_millisecs: int) -> None:
         self.turn_on()
-        self._timeout_id = GLib.timeout_add(duration_secs, self.turn_off)
+        self._timeout_id = GLib.timeout_add(duration_millisecs, self.turn_off)
 
     def turn_on(self) -> None:
         if self._timeout_id is not None:
