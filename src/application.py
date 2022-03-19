@@ -40,7 +40,7 @@ class Application:
 
         self._temperature_sensor = TemperatureSensor()
 
-        self._display = Display(["   ^   ^   ^    ", "Scan code above "])
+        self._display = Display([" Place QR Code  ", " ^ ^ Above ^ ^  "])
 
         self._pump = Relay(PUMP_IO, True)
 
@@ -79,7 +79,7 @@ class Application:
         temperature = self._temperature_sensor.get_object_temperature()
         self._check_abnormal_temperature(temperature)
         self._display.ephemeral_write(
-            ["  Temperature   ", f"     {temperature:.1f} C     "], 3
+            ["  Temperature:  ", f"     {temperature:.1f} C     "], 3
         )
 
         try:
@@ -140,7 +140,7 @@ temperature: {temperature}
             temperature = self._temperature_sensor.get_object_temperature()
             self._check_abnormal_temperature(temperature)
             self._display.ephemeral_write(
-                ["  Temperature   ", f"     {temperature:.1f} C     "], 3
+                ["  Temperature:  ", f"     {temperature:.1f} C     "], 3
             )
 
         try:
@@ -148,7 +148,7 @@ temperature: {temperature}
                 f"{code}\ntime_detected: {datetime.now().isoformat()}\ntemperature: {temperature}"
             )
             self._try_store_person_to_spreadsheet(person)
-            self._display.ephemeral_write([f"Hi {person.name}", "  Info logged   "], 3)
+            self._display.ephemeral_write([person.name, "Hi, info logged "], 3)
         except PersonParseError as error:
             self._handle_person_parse_error(error)
 
@@ -161,7 +161,7 @@ temperature: {temperature}
         self._last_code = code
 
         print(">>> Wait 5 seconds for hand")
-        self._display.write([" Code detected! ", "temp&alcohol v v"])
+        self._display.write([" Put hand below ", "alchohol & temp "])
         self._proximity_sensor.wait_for_input(
             5, self._handle_proximity_sensor_wait_for_input, code
         )
