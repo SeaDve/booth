@@ -18,6 +18,7 @@ DEFAULT_SPREADSHEET_ID = "1IA6YhAdkvdNkkPPyhCj5JQrB8dcaKZNWzk-4gI0Ea4Y"
 # GPIO ports
 PROXIMITY_SENSOR_IO = 4
 PUMP_IO = 17
+BUZZER_IO = 24
 
 
 class Application:
@@ -26,6 +27,7 @@ class Application:
     _camera: Camera
     _display: Display
     _pump: Relay
+    _buzzer: Relay
     _proximity_sensor: ProximitySensor
     _temperature_sensor: TemperatureSensor
 
@@ -45,7 +47,9 @@ class Application:
 
         self._display = Display(["   ^   ^   ^    ", "Scan code above "])
 
-        self._pump = Relay(PUMP_IO)
+        self._pump = Relay(PUMP_IO, True)
+
+        self._buzzer = Relay(BUZZER_IO)
 
         GLib.timeout_add_seconds(5, self._reset_last_code)
 
@@ -91,6 +95,7 @@ temperature: {temperature}
         if self._last_code == code:
             print(">>> Same code as last, returning...")
         else:
+            self._buzzer.ephemeral_on(500)
             self._handle_new_code_detected(code)
 
     def _store_person_to_spreadsheet_thread(self, person: Person) -> None:
