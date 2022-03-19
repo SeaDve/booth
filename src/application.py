@@ -32,12 +32,6 @@ class Application:
     _temperature_sensor: TemperatureSensor
 
     def __init__(self):
-        self._camera = Camera()
-        self._code_detected_handler_id = self._camera.connect(
-            "code-detected", self._on_code_detected
-        )
-        self._camera.start()
-
         self._proximity_sensor = ProximitySensor(PROXIMITY_SENSOR_IO)
         self._detected_handler_id = self._proximity_sensor.connect(
             "detected", self._on_proximity_sensor_detected
@@ -50,6 +44,18 @@ class Application:
         self._pump = Relay(PUMP_IO, True)
 
         self._buzzer = Relay(BUZZER_IO)
+
+        self._camera = Camera()
+        self._camera.connect("error", lambda _: self._buzzer.ephemeral_on(5000))
+        self._code_detected_handler_id = self._camera.connect(
+            "code-detected", self._on_code_detected
+        )
+
+        try:
+            self._camera.start()
+        except Exception as error:
+            print(f">>> Camera error: {error}")
+            self._buzzer.ephemeral_on(5000)
 
         GLib.timeout_add_seconds(5, self._reset_last_code)
 
@@ -74,8 +80,9 @@ class Application:
             ["  Temperature   ", f"     {temperature:.1f} C     "], 3
         )
 
-        person = Person.from_str(
-            f"""
+        try:
+            person = Person.from_str(
+                f"""
 name: Unknown
 address: Unknown
 contact_number: Unknown
@@ -83,8 +90,10 @@ room_id: Unknown
 time_detected: {datetime.now().isoformat()}
 temperature: {temperature}
 """
-        )
-        self._try_store_person_to_spreadsheet(person)
+            )
+            self._try_store_person_to_spreadsheet(person)
+        except PersonParseError as error:
+            self._handle_person_parse_error(error)
 
         self._proximity_sensor.handler_unblock(self._detected_handler_id)
 
@@ -107,7 +116,7 @@ temperature: {temperature}
                 target=self._store_person_to_spreadsheet_thread, args=[person]
             )
             thread.run()
-        except PersonParseError as error:
+        except Exception as error:
             print(f"Error: {error}")
 
     def _handle_proximity_sensor_wait_for_input(
@@ -116,11 +125,10 @@ temperature: {temperature}
         temperature = DEFAULT_TEMPERATURE
 
         if is_timeout_reached:
-            self._display.write(["   Received no  ", "  Temperature   "])
+            self._display.ephemeral_write(["   Received no  ", "  Temperature   "], 3)
             print(
                 ">>> Skipped dispensing alcohol and getting temperature: Timeout reached"
             )
-
         else:
             print(
                 ">>> Proximity sensor detected something. Dispensing alcohol and getting temp"
@@ -128,14 +136,18 @@ temperature: {temperature}
 
             self._pump.ephemeral_on(1500)
             temperature = self._temperature_sensor.get_object_temperature()
-            self._display.write(["  Temperature   ", f"     {temperature:.1f} C     "])
+            self._display.ephemeral_write(
+                ["  Temperature   ", f"     {temperature:.1f} C     "], 3
+            )
 
-        person = Person.from_str(
-            f"{code}\ntime_detected: {datetime.now().isoformat()}\ntemperature: {temperature}"
-        )
-        self._try_store_person_to_spreadsheet(person)
-
-        self._display.ephemeral_write([f"Hi {person.name}", "  Info logged   "], 3)
+        try:
+            person = Person.from_str(
+                f"{code}\ntime_detected: {datetime.now().isoformat()}\ntemperature: {temperature}"
+            )
+            self._try_store_person_to_spreadsheet(person)
+            self._display.ephemeral_write([f"Hi {person.name}", "  Info logged   "], 3)
+        except PersonParseError as error:
+            self._handle_person_parse_error(error)
 
         self._camera.handler_unblock(self._code_detected_handler_id)
         self._proximity_sensor.handler_unblock(self._detected_handler_id)
@@ -150,6 +162,11 @@ temperature: {temperature}
         self._proximity_sensor.wait_for_input(
             5, self._handle_proximity_sensor_wait_for_input, code
         )
+
+    def _handle_person_parse_error(self, error: PersonParseError) -> None:
+        self._buzzer.ephemeral_on(200)
+        GLib.timeout_add(400, self._buzzer.ephemeral_on, 200)
+        print(f"Error: {error}")
 
     def _reset_last_code(self):
         self._last_code = None
