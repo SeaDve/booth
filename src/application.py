@@ -23,6 +23,7 @@ BUZZER_IO = 24
 
 class Application:
     _last_code: Union[str, None] = None
+    _abnormal_temperature_handler = None
 
     _camera: Camera
     _display: Display
@@ -76,6 +77,7 @@ class Application:
 
         self._pump.ephemeral_on(1500)
         temperature = self._temperature_sensor.get_object_temperature()
+        self._check_abnormal_temperature(temperature)
         self._display.ephemeral_write(
             ["  Temperature   ", f"     {temperature:.1f} C     "], 3
         )
@@ -136,6 +138,7 @@ temperature: {temperature}
 
             self._pump.ephemeral_on(1500)
             temperature = self._temperature_sensor.get_object_temperature()
+            self._check_abnormal_temperature(temperature)
             self._display.ephemeral_write(
                 ["  Temperature   ", f"     {temperature:.1f} C     "], 3
             )
@@ -167,6 +170,18 @@ temperature: {temperature}
         self._buzzer.ephemeral_on(200)
         GLib.timeout_add(400, self._buzzer.ephemeral_on, 200)
         print(f"Error: {error}")
+
+    def _check_abnormal_temperature(self, temp: float) -> None:
+        if self._abnormal_temperature_handler is not None:
+            GLib.source_remove(self._abnormal_temperature_handler)
+            self._abnormal_temperature_handler = None
+
+        def __inner():
+            self._buzzer.ephemeral_on(1000)
+            return True
+
+        if temp > 38.0:
+            self._abnormal_temperature_handler = GLib.timeout_add_seconds(2, __inner)
 
     def _reset_last_code(self):
         self._last_code = None
