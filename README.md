@@ -14,3 +14,15 @@ pip install gspread pyyaml PyMLX90614
 ```bash
 python src/main.py
 ```
+
+# QR Code Generator
+
+### Python dependencies
+```bash
+pip install qrcode pandas openpyxl
+```
+
+### Running
+```bash
+python generate_qr_code/main.py -h -v excel_file_path output_file
+```
