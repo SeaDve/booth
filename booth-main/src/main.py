@@ -6,6 +6,7 @@ gi.require_version("Gst", "1.0")
 from gi.repository import Gst
 
 from application import Application
+from utils import log_info
 
 
 def main():
@@ -15,7 +16,7 @@ def main():
 
     app = Application()
 
-    print(">>> Application ran")
+    log_info("Application is now running")
     app.run()
 
     GPIO.cleanup()

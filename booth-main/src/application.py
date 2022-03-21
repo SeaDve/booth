@@ -7,11 +7,13 @@ from gi.repository import GLib
 from camera import Camera
 from person import Person, PersonParseError
 from spreadsheet import Spreadsheet
+from utils import log_error, log_info
 from devices.proximity import ProximitySensor
 from devices.temperature import TemperatureSensor
 from devices.display import Display
 from devices.relay import Relay
 
+DEFAULT_CODE_DETECTED_TIMEOUT = 5  # seconds
 DEFAULT_TEMPERATURE = -1
 DEFAULT_SPREADSHEET_ID = "1IA6YhAdkvdNkkPPyhCj5JQrB8dcaKZNWzk-4gI0Ea4Y"
 
@@ -40,7 +42,10 @@ class Application:
 
         self._temperature_sensor = TemperatureSensor()
 
-        self._display = Display([" Place QR Code  ", " ^ ^ Above ^ ^  "])
+        try:
+            self._display = Display([" Place QR Code  ", " ^ ^ Above ^ ^  "])
+        except OSError as error:
+            log_error(f"Failed to initialize display: {error}")
 
         self._pump = Relay(PUMP_IO, True)
 
@@ -55,10 +60,12 @@ class Application:
         try:
             self._camera.start()
         except Exception as error:
-            print(f">>> Camera error: {error}")
+            log_error(f"Failed to start camera: {error}")
             self._buzzer.ephemeral_on(5000)
 
         GLib.timeout_add_seconds(5, self._reset_last_code)
+
+        self._buzzer.ephemeral_on(50)
 
     def run(self):
         loop = GLib.MainLoop()
@@ -71,7 +78,7 @@ class Application:
             self._display.clear()
 
     def _on_proximity_sensor_detected(self, proximity_sensor: ProximitySensor) -> None:
-        print(">>> Proximity sensor detected something")
+        log_info("Proximity sensor detected something")
 
         self._proximity_sensor.handler_block(self._detected_handler_id)
 
@@ -104,7 +111,7 @@ temperature: {temperature}
         self._proximity_sensor.handler_block(self._detected_handler_id)
 
         if self._last_code == code:
-            print(">>> Same code as last, returning...")
+            log_info("Same code as last; returning...")
         else:
             self._buzzer.ephemeral_on(500)
             self._handle_new_code_detected(code)
@@ -119,7 +126,7 @@ temperature: {temperature}
             )
             thread.run()
         except Exception as error:
-            print(f"Error: {error}")
+            log_error(f"Failed to store person to spreadsheet: {error}")
 
     def _handle_proximity_sensor_wait_for_input(
         self, is_timeout_reached: bool, code: str
@@ -128,12 +135,12 @@ temperature: {temperature}
 
         if is_timeout_reached:
             self._display.ephemeral_write(["   Received no  ", "  Temperature   "], 3)
-            print(
-                ">>> Skipped dispensing alcohol and getting temperature: Timeout reached"
+            log_info(
+                "Skipped dispensing alcohol and getting temperature: Timeout reached"
             )
         else:
-            print(
-                ">>> Proximity sensor detected something. Dispensing alcohol and getting temp"
+            log_info(
+                "Proximity sensor detected something. Dispensing alcohol and getting temp"
             )
 
             self._pump.ephemeral_on(1500)
@@ -156,20 +163,22 @@ temperature: {temperature}
         self._proximity_sensor.handler_unblock(self._detected_handler_id)
 
     def _handle_new_code_detected(self, code: str) -> None:
-        print(f">>> New detected code `{code}`")
+        log_info(f"New detected code `{code}`")
 
         self._last_code = code
 
-        print(">>> Wait 5 seconds for hand")
+        log_info(f"Waiting {DEFAULT_CODE_DETECTED_TIMEOUT} seconds for hand")
         self._display.write([" Put hand below ", "alchohol & temp "])
         self._proximity_sensor.wait_for_input(
-            5, self._handle_proximity_sensor_wait_for_input, code
+            DEFAULT_CODE_DETECTED_TIMEOUT,
+            self._handle_proximity_sensor_wait_for_input,
+            code,
         )
 
     def _handle_person_parse_error(self, error: PersonParseError) -> None:
         self._buzzer.ephemeral_on(200)
         GLib.timeout_add(400, self._buzzer.ephemeral_on, 200)
-        print(f"Error: {error}")
+        log_error(f"Failed parsing Person from string: {error}")
 
     def _check_abnormal_temperature(self, temp: float) -> None:
         if self._abnormal_temperature_handler is not None:

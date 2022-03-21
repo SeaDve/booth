@@ -1,6 +1,7 @@
 import gspread
 
 from person import Person
+from utils import log_info
 
 AUTHORIZED_PATH = "./token_cache.json"
 CREDENTIALS_PATH = "./credentials.json"
@@ -28,4 +29,4 @@ class Spreadsheet:
                 str(person.time_detected),
             ]
         )
-        print(f">>> Appended Person {person}")
+        log_info(f"Appended Person {person}")

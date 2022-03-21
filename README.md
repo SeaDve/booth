@@ -14,7 +14,7 @@ sudo apt install pip libgstreamer1.0-dev gstreamer1.0-plugins-good libzbar-dev g
 Note: Must be installed globally using `sudo -H` when running the script with cron.
 
 ```bash
-pip install gspread pyyaml PyMLX90614
+pip install gspread pyyaml PyMLX90614 rpi_lcd
 ```
 
 ## Running
@@ -37,6 +37,10 @@ Then append the following line:
 ```
 @reboot sh /home/pi/booth-py/booth-main/booth.sh >/home/pi/logs/cronlog 2>&1
 ```
+
+## Error codes
+
+* Camera error: 5s beep
 
 
 # Booth Ext

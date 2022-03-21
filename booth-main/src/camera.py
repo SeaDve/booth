@@ -1,5 +1,7 @@
 from gi.repository import GObject, Gst
 
+from utils import log_error, log_info
+
 
 class ElementNotFoundError(Exception):
     def __init__(self, element_name: str):
@@ -28,7 +30,7 @@ class Camera(GObject.Object):
         self._bus.add_signal_watch()
         self._bus_handler_id = self._bus.connect("message", self._handle_message)
         self._pipeline.set_state(Gst.State.PLAYING)
-        print(">>> Camera started")
+        log_info("Camera started")
 
     def stop(self):
         self._pipeline.set_state(Gst.State.NULL)
@@ -45,12 +47,12 @@ class Camera(GObject.Object):
         if message.type == Gst.MessageType.STATE_CHANGED:
             if message.src == self._pipeline:
                 old_state, new_state, pending = message.parse_state_changed()
-                print(f">>> Pipeline state set from {old_state} -> {new_state}")
+                log_info(f"Pipeline state set from {old_state} -> {new_state}")
             return True
 
         if message.type == Gst.MessageType.ERROR:
             error, debug = message.parse_error()
-            print(f"Error: {error} ({debug})")
+            log_error(f"Error from message bus: {error} ({debug})")
             self.stop()
             self._pipeline = None
             self.emit("error")
