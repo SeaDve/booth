@@ -6,6 +6,8 @@ sudo apt install pip python3-gi python3-gst-1.0 gstreamer1.0-plugins-good libzba
 ```
 
 ### Python dependencies
+Note: Must be installed globally using `sudo -H` when running the script with cron.
+
 ```bash
 pip install gspread pyyaml PyMLX90614
 ```
