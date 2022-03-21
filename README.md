@@ -40,7 +40,8 @@ Then append the following line:
 
 ## Error codes
 
-* Camera error: 5s beep
+* Camera startup error: 5s beep
+* Display initialize error: 7s beep
 
 
 # Booth Ext

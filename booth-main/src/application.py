@@ -35,6 +35,8 @@ class Application:
     _temperature_sensor: TemperatureSensor
 
     def __init__(self):
+        init_successful = True
+
         self._proximity_sensor = ProximitySensor(PROXIMITY_SENSOR_IO)
         self._detected_handler_id = self._proximity_sensor.connect(
             "detected", self._on_proximity_sensor_detected
@@ -42,14 +44,16 @@ class Application:
 
         self._temperature_sensor = TemperatureSensor()
 
-        try:
-            self._display = Display([" Place QR Code  ", " ^ ^ Above ^ ^  "])
-        except OSError as error:
-            log_error(f"Failed to initialize display: {error}")
+        self._buzzer = Relay(BUZZER_IO)
 
         self._pump = Relay(PUMP_IO, True)
 
-        self._buzzer = Relay(BUZZER_IO)
+        try:
+            self._display = Display([" Place QR Code  ", " ^ ^ Above ^ ^  "])
+        except OSError as error:
+            init_successful = False
+            log_error(f"Failed to initialize display: {error}")
+            self._buzzer.ephemeral_on(7000)
 
         self._camera = Camera()
         self._camera.connect("error", lambda _: self._buzzer.ephemeral_on(5000))
@@ -60,12 +64,14 @@ class Application:
         try:
             self._camera.start()
         except Exception as error:
+            init_successful = False
             log_error(f"Failed to start camera: {error}")
             self._buzzer.ephemeral_on(5000)
 
         GLib.timeout_add_seconds(5, self._reset_last_code)
 
-        self._buzzer.ephemeral_on(50)
+        if init_successful:
+            self._buzzer.ephemeral_on(50)
 
     def run(self):
         loop = GLib.MainLoop()
