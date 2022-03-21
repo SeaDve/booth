@@ -174,7 +174,7 @@ temperature: {temperature}
         self._last_code = code
 
         log_info(f"Waiting {DEFAULT_CODE_DETECTED_TIMEOUT} seconds for hand")
-        self._display.write([" Put hand below ", "alchohol & temp "])
+        self._display.write([" Put hand below ", " alcohol & temp "])
         self._proximity_sensor.wait_for_input(
             DEFAULT_CODE_DETECTED_TIMEOUT,
             self._handle_proximity_sensor_wait_for_input,
