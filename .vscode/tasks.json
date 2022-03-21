@@ -10,18 +10,6 @@
             }
         },
         {
-            "label": "Run",
-            "type": "shell",
-            "command": "python src/main.py",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "presentation": {
-                "reveal": "always"
-            }
-        },
-        {
             "label": "CopyToPi",
             "type": "shell",
             "command": "sshpass -p raspberry rsync --exclude \".*/\" -aP ./ pi@192.168.0.21:~/booth-py",
