@@ -7,7 +7,7 @@ It needs the `i2c` interface to be enabled through `raspi-config`.
 
 ### Native
 ```bash
-sudo apt install pip python3-gi python3-gst-1.0 gstreamer1.0-plugins-good libzbar-dev gstreamer1.0-plugins-bad
+sudo apt install pip libgstreamer1.0-dev gstreamer1.0-plugins-good libzbar-dev gstreamer1.0-plugins-bad python3-gi
 ```
 
 ### Python
