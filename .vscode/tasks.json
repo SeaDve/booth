@@ -22,28 +22,9 @@
             }
         },
         {
-            "label": "PiSSH",
-            "type": "shell",
-            "command": "sshpass -p raspberry ssh pi@192.168.0.21",
-            "presentation": {
-                "reveal": "always"
-            }
-        },
-        {
             "label": "CopyToPi",
             "type": "shell",
             "command": "sshpass -p raspberry rsync --exclude \".*/\" -aP ./ pi@192.168.0.21:~/booth-py",
-            "presentation": {
-                "reveal": "always"
-            }
-        },
-        {
-            "label": "Copy and Run to Pi",
-            "type": "shell",
-            "command": "sshpass -p raspberry ssh pi@192.168.0.21 'cd ~/booth-py && python src/main.py'",
-            "dependsOn": [
-                "CopyToPi"
-            ],
             "presentation": {
                 "reveal": "always"
             }
