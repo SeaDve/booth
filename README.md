@@ -44,7 +44,7 @@ Then append the following line:
 * Display initialize error: 7s beep
 
 
-# Booth Ext
+# UV Sterilizer
 This includes the UV-C sterilizer. This must be uploaded in an Arduino device.
 
 
