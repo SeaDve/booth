@@ -12,7 +12,7 @@
         {
             "label": "CopyToPi",
             "type": "shell",
-            "command": "sshpass -p raspberry rsync --exclude \".*/\" -aP ./ pi@192.168.0.21:~/booth-py",
+            "command": "sshpass -p raspberry rsync --exclude \".*/\" -aP ./ pi@192.168.0.17:~/booth-py",
             "presentation": {
                 "reveal": "always"
             }

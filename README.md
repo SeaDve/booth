@@ -14,7 +14,7 @@ sudo apt install pip libgstreamer1.0-dev gstreamer1.0-plugins-good libzbar-dev g
 Note: Must be installed globally using `sudo -H` when running the script with cron.
 
 ```bash
-pip install gspread pyyaml PyMLX90614 rpi_lcd
+sudo -H pip install gspread pyyaml PyMLX90614 rpi_lcd
 ```
 
 ## Running
@@ -24,7 +24,7 @@ python src/main.py
 ```
 
 ## Setting up autostart
-This would automatically launch `booth-main` on Pi's startup.
+This would automatically launch `booth_main` on Pi's startup.
 
 Run the following command:
 ```bash
@@ -35,7 +35,7 @@ sudo crontab -e
 Then append the following line:
 
 ```
-@reboot sh /home/pi/booth-py/booth-main/booth.sh >/home/pi/logs/cronlog 2>&1
+@reboot sh /home/pi/booth-py/booth_main/booth.sh >/home/pi/logs/cronlog 2>&1
 ```
 
 ## Error codes
