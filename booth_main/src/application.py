@@ -17,6 +17,8 @@ DEFAULT_CODE_DETECTED_TIMEOUT = 5  # seconds
 DEFAULT_TEMPERATURE = -1
 DEFAULT_SPREADSHEET_ID = "1IA6YhAdkvdNkkPPyhCj5JQrB8dcaKZNWzk-4gI0Ea4Y"
 
+PUMP_DISPENSE_DURATION_MS = 1000
+
 # GPIO ports
 PROXIMITY_SENSOR_IO = 4
 PUMP_IO = 17
@@ -88,7 +90,7 @@ class Application:
 
         self._proximity_sensor.handler_block(self._detected_handler_id)
 
-        self._pump.ephemeral_on(1500)
+        self._pump.ephemeral_on(PUMP_DISPENSE_DURATION_MS)
         temperature = self._temperature_sensor.get_object_temperature()
         self._check_abnormal_temperature(temperature)
         self._display.ephemeral_write(
@@ -149,7 +151,7 @@ temperature: {temperature}
                 "Proximity sensor detected something. Dispensing alcohol and getting temp"
             )
 
-            self._pump.ephemeral_on(1500)
+            self._pump.ephemeral_on(PUMP_DISPENSE_DURATION_MS)
             temperature = self._temperature_sensor.get_object_temperature()
             self._check_abnormal_temperature(temperature)
             self._display.ephemeral_write(
