@@ -19,7 +19,7 @@ sudo -H pip install gspread pyyaml PyMLX90614 rpi_lcd
 
 ## Running
 ```bash
-cd booth-main
+cd booth/booth_main
 python src/main.py
 ```
 
@@ -35,7 +35,7 @@ sudo crontab -e
 Then append the following line:
 
 ```
-@reboot sh /home/pi/booth-py/booth_main/booth.sh >/home/pi/logs/cronlog 2>&1
+@reboot sh /home/pi/booth/booth_main/booth.sh >/home/pi/logs/cronlog 2>&1
 ```
 
 ## Error codes
